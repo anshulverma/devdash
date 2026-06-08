@@ -31,6 +31,14 @@ def main(argv: list[str] | None = None) -> None:
     imp.add_argument("--token", default=None, help="bearer token, if the dashboard requires auth")
     imp.add_argument("--glob", default=None, help="transcript glob (default ~/.claude/**/*.jsonl)")
 
+    chk = sub.add_parser("check-commit-msg", help="validate a commit message's phase tag")
+    chk.add_argument("msgfile", help="path to the commit message file (git passes $1)")
+    chk.add_argument("--phases-file", required=True, help="JSON/YAML file of host phase keys")
+
+    ins = sub.add_parser("install-hook", help="install the commit-msg hook into a git repo")
+    ins.add_argument("--repo", default=".", help="repo root (default: cwd)")
+    ins.add_argument("--phases-file", required=True, help="JSON/YAML file of host phase keys")
+
     args = parser.parse_args(argv)
     config = DevDashConfig()
 
@@ -39,6 +47,15 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args.command == "import-tokens":
         _import_tokens(dev=args.dev, url=args.url, token=args.token, pattern=args.glob)
+        return
+    if args.command == "check-commit-msg":
+        _check_commit_msg(args.msgfile, args.phases_file)
+        return
+    if args.command == "install-hook":
+        from .phases.hook import install_hook
+
+        path = install_hook(args.repo, args.phases_file)
+        print(f"installed commit-msg hook: {path}")
         return
 
     _serve(config, host=getattr(args, "host", "127.0.0.1"), port=getattr(args, "port", 8000))
@@ -82,6 +99,20 @@ def _db_create(config: DevDashConfig) -> None:
             await dispose_engine(engine)
 
     asyncio.run(run())
+
+
+def _check_commit_msg(msgfile: str, phases_file: str) -> None:
+    import sys
+    from pathlib import Path
+
+    from .phases.hook import check_commit_message, load_phase_keys
+
+    keys = load_phase_keys(phases_file)
+    message = Path(msgfile).read_text(encoding="utf-8")
+    ok, error = check_commit_message(message, keys)
+    if not ok:
+        print(f"devdash commit-msg: {error}", file=sys.stderr)
+        raise SystemExit(1)
 
 
 def _serve(config: DevDashConfig, *, host: str, port: int) -> None:

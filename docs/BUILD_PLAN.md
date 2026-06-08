@@ -55,7 +55,7 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
 - [x] Tables migrated into devdash's owned DB; alembic baseline in devdash namespace
 - [x] Phase taxonomy + git-inference rules + price table as host config (keep word `phase`)
 - [x] Provider-neutral token ingest; bundled `[claude-code]` importer (D08); unknown-model → cost 0 + warn
-- [ ] Projection optional (`method:"none"`); degraded manual-session mode; lib-provided `commit-msg` hook
+- [x] Projection optional (`method:"none"`); degraded manual-session mode; lib-provided `commit-msg` hook
 - [ ] `phasesTab(config)` UI uses `CategoryColorProvider`; a host with a sample taxonomy tracks
       sessions + tokens + projection end-to-end in `examples/host-app`
 

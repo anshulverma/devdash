@@ -5,13 +5,14 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (box 3 Quickwit+Redis left). **M4: boxes 1,2,3
-  done** (tables+alembic; taxonomy; provider-neutral token ingest + claude-code importer).
-- **Next concrete step (M4 box 4):** complexity-weighted projection (finish-date/burn-rate) with a
-  `method:'none'` path when the taxonomy lacks complexity; degraded manual-session mode (no
-  taxonomy/git → untagged sessions, already works); a lib-provided host-configured `commit-msg`
-  git hook that validates the tag prefix against the host phase keys. Snapshot into
-  projection_snapshots. Then box 5 (phasesTab UI + example), and M3 box 3 (Quickwit+Redis).
+- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (box 3 Quickwit+Redis left). **M4: boxes
+  1,2,3,4 done.** Only M4 box 5 (phasesTab UI + example) + M3 box 3 remain.
+- **Next concrete step (M4 box 5 — unblocks COMPLETION):** in `@devdash/ui`, add a PhasesClient
+  (httpPhasesClient over the /phases REST) + a `phasesTab(config)` (scrollModel 'scroll') rendering
+  the phase table (CategoryColorProvider for colors), token stats, and the projection card (hide
+  finish-date when method==='none'). Wire phasesTab into examples/host-app with a sample taxonomy +
+  an in-memory/HTTP client so the example runs the Phases tab end-to-end. Then M3 box 3
+  (Quickwit+Redis).
 - **Known blockers:** none.
 
 ## Environment notes
@@ -28,6 +29,12 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 10 — M4 box 4: projection + manual mode + commit-msg hook COMPLETE
+- phases/projection.py: complexity-weighted compute_projection -> method none|naive|calibrated (none when no complexity; naive when nothing done; calibrated gives target/remaining/burn/finish-date). repository.projection_inputs + snapshot_projection; GET /phases/projection route.
+- Degraded manual-session mode verified (no taxonomy -> sessions work, projection 'none').
+- phases/hook.py: generic check_commit_message (tag via host tag_regex, membership in host phase keys), load_phase_keys (json/yaml), install_hook (.git/hooks/commit-msg); CLIs `devdash check-commit-msg` + `devdash install-hook`.
+- **Verified:** backend pytest 48/48 (10 new: projection none/naive/calibrated + route + manual mode; hook extract/check/comments/key-loading/install), ruff clean.
+
 ### 2026-06-08 — iteration 9 — M4 box 3: token ingest + claude-code importer COMPLETE
 - phases/tokens.py: TokenRow contract + ImportResult. repository.import_token_rows (idempotent on message_uuid; cost from host PriceTable; unknown model -> cost 0 + reported, D08) + token_stats (totals + by_model). routes: POST /phases/tokens/import, GET /phases/tokens/stats.
 - importers/claude_code.py: pure-stdlib parser of ~/.claude JSONL transcripts -> TokenRow (parse_lines/parse_files/discover); `python -m devdash import-tokens --dev --url [--token] [--glob]` CLI POSTs via urllib. `[claude-code]` optional extra registered.

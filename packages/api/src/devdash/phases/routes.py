@@ -95,4 +95,17 @@ def build_phases_router(
     async def tokens_stats(engine: AsyncEngine = Depends(engine_dep)) -> dict:
         return await repo.token_stats(engine)
 
+    @router.get("/projection")
+    async def projection(engine: AsyncEngine = Depends(engine_dep)) -> dict:
+        from dataclasses import asdict
+        from datetime import date
+
+        from .projection import compute_projection
+
+        phases, cumulative, elapsed_days = await repo.projection_inputs(engine)
+        result = compute_projection(
+            phases, cumulative_sec=cumulative, elapsed_days=elapsed_days, today=date.today()
+        )
+        return asdict(result)
+
     return router

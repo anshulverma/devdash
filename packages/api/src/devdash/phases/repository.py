@@ -192,3 +192,49 @@ async def token_stats(engine: AsyncEngine) -> dict:
         "cost_usd": float(totals[3]),
         "by_model": {r[0]: float(r[1]) for r in by_model_rows},
     }
+
+
+async def projection_inputs(engine: AsyncEngine) -> tuple[list[dict], int, float]:
+    """Gather (phases, cumulative_sec, elapsed_days) for a projection."""
+    from datetime import datetime
+
+    from sqlalchemy import func
+
+    async with engine.connect() as conn:
+        phases = [dict(r._mapping) for r in (await conn.execute(select(m.phase_config))).all()]
+        agg = (
+            await conn.execute(
+                select(
+                    func.coalesce(func.sum(m.sessions.c.duration_sec), 0),
+                    func.min(m.sessions.c.started_at),
+                    func.max(m.sessions.c.ended_at),
+                )
+            )
+        ).one()
+    cumulative = int(agg[0] or 0)
+    elapsed_days = 0.0
+    start, end = agg[1], agg[2]
+    if start and end:
+        try:
+            s = datetime.fromisoformat(start.replace("Z", "+00:00"))
+            e = datetime.fromisoformat(end.replace("Z", "+00:00"))
+            elapsed_days = max((e - s).total_seconds() / 86400.0, 0.0)
+        except ValueError:
+            pass
+    return phases, cumulative, elapsed_days
+
+
+async def snapshot_projection(engine: AsyncEngine, result, trigger: str) -> None:
+    async with engine.begin() as conn:
+        await conn.execute(
+            insert(m.projection_snapshots).values(
+                captured_at=_now(),
+                projected_finish_date=result.projected_finish_date,
+                cumulative_sec=result.cumulative_sec,
+                remaining_sec=result.remaining_sec,
+                target_sec=result.target_sec,
+                burn_per_day_sec=result.burn_per_day_sec,
+                method=result.method,
+                trigger=trigger,
+            )
+        )
