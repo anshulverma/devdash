@@ -14,6 +14,7 @@ dependencies = [
     "uvicorn",
     "asyncpg>=0.31.0",
     "prometheus-fastapi-instrumentator>=8.0.0",
+    "aiosqlite",
 ]
 
 [project.optional-dependencies]

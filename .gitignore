@@ -19,3 +19,7 @@ build/
 *.local
 # OS
 .DS_Store
+
+# Built standalone UI assets (bundled into the wheel/image at release time)
+packages/api/src/devdash/static/assets/
+standalone-ui/dist/

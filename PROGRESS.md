@@ -5,10 +5,10 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **✅ BUILD COMPLETE (M0–M4, 27/27 feature boxes).** Verified green: pnpm build, pnpm test (27/27),
-  backend pytest (60 passed in CI with all services; 51+2-skipped locally), ruff. The example runs
-  BOTH Logs (in-memory) + Phases tabs end-to-end. Only M5 (release — human-gated publish) remains,
-  which is OUTSIDE the completion criterion.
+- **✅ BUILD COMPLETE (M0–M4).** Plus **M5 release pipeline WIRED (not fired):** lockstep versioning,
+  real standalone UI bundled into the wheel/image, multi-arch Docker, tag-triggered npm+PyPI+GHCR
+  publish. M5 boxes 1+3 done; boxes 2 (OpenAPI drift gate) + 4 (example-all-adapters canary) + 5
+  (actual v0.1.0 publish — HUMAN-GATED) intentionally pending.
 - **Next (optional, M5 — human-gated):** lockstep version + contract handshake (already exists);
   OpenAPI client drift gate; npm/PyPI/GHCR publish workflow (configure, do NOT fire). M5 is outside
   the M0–M4 completion criterion.
@@ -28,6 +28,14 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — M5 release pipeline wired (not fired)
+- standalone-ui/: a real Vite app rendering <DevDashboard> with the http log+phases clients at the runtime base path (relative asset URLs). scripts/build-standalone-ui.sh bundles it into the Python package static dir so the wheel/image serve the REAL dashboard (not the placeholder).
+- scripts/set-version.sh: lockstep version stamp across @devdash/ui + the Python package (version.py + pyproject); the release derives the version from the git tag.
+- docker/Dockerfile: multi-stage (node builds UI -> python runtime serves it). Fixed a real packaging bug: aiosqlite moved to RUNTIME deps (the zero-config default DB is sqlite+aiosqlite).
+- .github/workflows/release.yml: on tag v* -> build + PyPI Trusted Publishing (OIDC) + npm provenance (OIDC) + GHCR multi-arch buildx; idempotent (skip-existing). workflow_dispatch defaults to a non-publishing dry run. NO tag pushed, so it never auto-fires.
+- **Verified WITHOUT publishing:** set-version stamps both packages; wheel (devdash-0.1.0) built containing the real UI assets; npm pack dry-run (@devdash/ui@0.1.0, 7 files); multi-arch Docker image built + RAN: /dev meta handshake, real UI bundle, and /dev/logs API all 200. Then restored version to 0.0.0. Full regression green (pnpm build/test 27/27, backend 51+2-skipped, ruff, leak scan).
+- **Remaining (human-gated):** push a v0.1.0 tag to actually publish (NOT done); the npm side needs an NPM_TOKEN secret + PyPI Trusted Publishing configured on PyPI; optional: OpenAPI drift gate (box 2).
+
 ### 2026-06-08 — iteration 12 — M3 box 3: Quickwit+Redis composite COMPLETE → M0–M4 DONE
 - logs/quickwit_redis.py: QuickwitSearch (REST search + best-effort facets + /health/livez), RedisStreamTail (XADD ingest + XREAD tail; stream id = stable id, Last-Event-ID resume), QuickwitRedisLogSource composite (can_search∧can_tail, text_search 'fulltext'; refresh_health() degrades to tail-only when Quickwit unreachable). ingest mixin (D06). `[quickwit-redis]` extra (httpx+redis).
 - **Verified:** 5 composite tests green incl. against REAL Redis 7 + Quickwit (docker: real index create+ingest+search, redis tail+resume); full backend 53/53; ruff clean. CI api job gains redis service + a Quickwit start step + the test env vars.

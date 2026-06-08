@@ -25,6 +25,8 @@ jobs:
       - run: pnpm test
       - run: pnpm -C examples/host-app exec tsc --noEmit
       - run: pnpm -C examples/host-app build
+      - run: pnpm -C standalone-ui exec tsc --noEmit
+      - run: pnpm -C standalone-ui build
 
   api:
     runs-on: ubuntu-latest

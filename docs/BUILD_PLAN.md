@@ -60,9 +60,9 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
       sessions + tokens + projection end-to-end in `examples/host-app`
 
 ## M5 — Release pipeline + example canary
-- [ ] Lockstep version + `GET {base_path}/__devdash/meta` contract handshake (D12)
+- [x] Lockstep version + `GET {base_path}/__devdash/meta` contract handshake (D12)
 - [ ] OpenAPI emit → generated UI client + drift gate in CI
-- [ ] Tag → npm provenance + PyPI Trusted Publishing + GHCR multi-arch; idempotent re-runnable publish
+- [x] Tag → npm provenance + PyPI Trusted Publishing + GHCR multi-arch; idempotent re-runnable publish
 - [ ] `examples/host-app` exercises mount + custom tab + all log adapters; CI runs it against built packages
 - [ ] `v0.1.0` publishes all three artifacts; a clean checkout consumes them
 

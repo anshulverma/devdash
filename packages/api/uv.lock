@@ -148,6 +148,7 @@ name = "devdash"
 version = "0.0.0"
 source = { editable = "." }
 dependencies = [
+    { name = "aiosqlite" },
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "fastapi" },
@@ -175,6 +176,7 @@ quickwit-redis = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiosqlite" },
     { name = "aiosqlite", marker = "extra == 'dev'", specifier = ">=0.22.1" },
     { name = "alembic" },
     { name = "anyio", marker = "extra == 'dev'" },
