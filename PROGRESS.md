@@ -5,12 +5,12 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 COMPLETE ✅** (CI run `27125399349` green: ui + api + secret-scan). Now starting **M1**
-  (dashboard shell + tab-plugin API).
-- **Next concrete step:** implement `TabDescriptor` + `<DevDashboard>` + shell-owned hash routing in
-  `packages/ui/src` (test-first with vitest + @testing-library/react), and add example-app deps
-  (vite, @vitejs/plugin-react) so `examples/host-app` renders the shell with 2 placeholder tabs + 1
-  custom tab. Honor D01 (build-time composition), D02 (mandatory scrollModel), D03 (shell-owned hash).
+- **M0 + M1 COMPLETE ✅.** Now starting **M2** (backend mount model + engine lifecycle + own DB).
+- **Next concrete step:** in `packages/api`, implement `make_dashboard_app(config)` +
+  `mount_dashboard()` (D09) and `dashboard_lifespan(config)` building the async engine in-loop (D10,
+  fixes cross-loop flake). Add `DevDashConfig` (pydantic-settings, `DEVDASH_` env). Write a pytest
+  that mounts the sub-app into a host FastAPI app with no cross-loop error. Then the own-DB
+  provisioning (`devdash db create`) + expand-only advisory-locked `devdash.migrate()`.
 - **Known blockers:** none.
 
 ## Environment notes
@@ -27,6 +27,12 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 2 — M1 dashboard shell + tab-plugin API COMPLETE
+- @devdash/ui shell: TabDescriptor (mandatory scrollModel D02, freeform id, lazy-able), <DevDashboard> build-time composition (D01), shell-owned #<id>?<params> routing + useTabQuery (D03), DevDashboardProvider/useDevDash, CategoryColorProvider, neutral theme + themeToCssVars, per-tab TabErrorBoundary + Suspense, duplicate-id throw, unknown-hash fallback, zero-tabs empty state.
+- Primitives exported: RecordTable, FilterChips, TimeRangePicker, JsonDetailPanel, StatusStrip, useEventSourceTail (ring + dedup-by-id + drop-oldest).
+- examples/host-app: real DevDashboard with 2 placeholder tabs + 1 custom 'Records' tab built on primitives + deep-linked filter via useTabQuery + theme override + branding. Vite 8 build green.
+- **Verified:** vitest 16/16, tsc --noEmit clean (ui + example), pnpm build green, example vite build green, leak scan clean. CI extended to build the example.
+
 ### 2026-06-08 — iteration 1 (cont.) — M0 COMPLETE, CI green
 - Fixed CI: allowBuilds.esbuild (pnpm 11) + API uv venv. CI run 27125399349 all green (ui/api/secret-scan). All 5 M0 boxes ticked.
 

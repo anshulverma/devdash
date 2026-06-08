@@ -17,16 +17,16 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
 - [x] `gitleaks` (or equivalent) secret-scan gate runs on push
 
 ## M1 — Dashboard shell + tab-plugin API *(the named deliverable)*
-- [ ] `TabDescriptor` type; mandatory `scrollModel` (D02); freeform `id`; `React.lazy`-able component
-- [ ] `<DevDashboard>` build-time composition (D01); defaults not auto-injected
-- [ ] Shell-owned `#<id>?<params>` routing + `useTabQuery<T>(codec)` (D03)
-- [ ] `<DevDashboardProvider>` exposes ambient services; `--devdash-*` theme + Tailwind preset +
+- [x] `TabDescriptor` type; mandatory `scrollModel` (D02); freeform `id`; `React.lazy`-able component
+- [x] `<DevDashboard>` build-time composition (D01); defaults not auto-injected
+- [x] Shell-owned `#<id>?<params>` routing + `useTabQuery<T>(codec)` (D03)
+- [x] `<DevDashboardProvider>` exposes ambient services; `--devdash-*` theme + Tailwind preset +
       neutral default; `branding` prop; `CategoryColorProvider`
-- [ ] Primitives exported (stubs ok): `RecordTable`, `useEventSourceTail`, `FilterChips`,
+- [x] Primitives exported (stubs ok): `RecordTable`, `useEventSourceTail`, `FilterChips`,
       `TimeRangePicker`, `JsonDetailPanel`, `StatusStrip`
-- [ ] Resilience: per-tab error boundary, duplicate-id throw (dev), unknown-hash fallback,
+- [x] Resilience: per-tab error boundary, duplicate-id throw (dev), unknown-hash fallback,
       zero-tabs empty state
-- [ ] `examples/host-app` renders 2 placeholder tabs + 1 custom tab; deep-links work; theme override
+- [x] `examples/host-app` renders 2 placeholder tabs + 1 custom tab; deep-links work; theme override
       works; a thrown tab is isolated
 
 ## M2 — Backend mount model + engine lifecycle + own DB

@@ -23,6 +23,8 @@ jobs:
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
+      - run: pnpm -C examples/host-app exec tsc --noEmit
+      - run: pnpm -C examples/host-app build
 
   api:
     runs-on: ubuntu-latest
