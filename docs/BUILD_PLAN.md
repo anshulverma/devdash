@@ -52,7 +52,7 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
       absent
 
 ## M4 — Phases tracker (own DB)
-- [ ] Tables migrated into devdash's owned DB; alembic baseline in devdash namespace
+- [x] Tables migrated into devdash's owned DB; alembic baseline in devdash namespace
 - [ ] Phase taxonomy + git-inference rules + price table as host config (keep word `phase`)
 - [ ] Provider-neutral token ingest; bundled `[claude-code]` importer (D08); unknown-model → cost 0 + warn
 - [ ] Projection optional (`method:"none"`); degraded manual-session mode; lib-provided `commit-msg` hook

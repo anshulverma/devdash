@@ -5,12 +5,15 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅. M3 in progress** (boxes 1,2,4,5 done). Only box 3 (Quickwit+Redis
-  composite) remains in M3. M4 (Phases) may interleave / come next.
-- **Next concrete step:** either M3 box 3 (Quickwit+Redis composite adapter — Quickwit search +
-  Redis-Streams tail; degrade to tail-only when search is down; needs both services, test via docker
-  + skip-if-unavailable), OR start **M4 (Phases tracker)** which is independent and unblocks the
-  completion criterion (example runs Phases tab). Recommend M4 next, then circle back to box 3.
+- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (only box 3 Quickwit+Redis left). **M4: box 1
+  done** (phase tables + alembic baseline in devdash's owned DB).
+- **Next concrete step (M4 box 2):** in `packages/api`, add the host phase **taxonomy** config (a
+  YAML/dict of phases with label/status/complexity/display_order/parent/color — keep the word
+  `phase`), seed `devdash_phase_config` from it on startup, and add the phases REST routes
+  (GET phases, sessions CRUD). Git-inference rules + price table as host config. Then box 3 (token
+  ingest + importer), box 4 (projection + manual mode + commit-msg hook), box 5 (phasesTab UI +
+  example). Migrations now use alembic (run_sync, advisory-locked) — add a new revision per schema
+  change, not create_all.
 - **Known blockers:** none.
 
 ## Environment notes
@@ -27,6 +30,11 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 7 — M4 box 1: phase tables + alembic baseline COMPLETE
+- phases/models.py: 7 tables on devdash.metadata (sessions, token_usage, phase_config, phase_transitions, developers, dev_settings, projection_snapshots; BigInteger ids with sqlite Integer variant).
+- Switched migrate() from create_all to ALEMBIC: programmatic Config + _alembic/ env.py (async run_sync pattern) + 0001_baseline. Postgres holds a session-level advisory lock on a separate connection spanning alembic's transaction; sqlite path is lock-free. Default alembic_version table (devdash owns the whole DB).
+- **Verified:** full backend suite 36/36 on BOTH sqlite and real Postgres 17 (docker), incl. migrate-creates-7-tables + idempotent + advisory-locked PG path; ruff clean; wheel ships devdash/_alembic/{env.py,script.py.mako,versions/}.
+
 ### 2026-06-08 — iteration 6 — M3 box 4: SQL/Postgres LogSource adapter COMPLETE
 - SqlLogSource: a `devdash_logs` table in devdash's OWNED database (self-managed via bind_engine, expand-only checkfirst; BigInteger id with sqlite Integer variant for rowid autoincrement). Portable substring search (case-insensitive LIKE), enumerate, cursor-poll tail on the autoincrement id (the stable id, D04) → real Last-Event-ID resume (cursor_pagination=True). ingest() mixin (not on the protocol, D06).
 - Wired: dashboard lifespan binds the engine to bindable log sources after migrate; tail route reads the Last-Event-ID header into the resume cursor.
