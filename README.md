@@ -17,8 +17,9 @@ plugin* you build on top of devdash's shell. devdash never owns that data.
 License: **Apache-2.0**. Design notes: [`docs/DESIGN.md`](docs/DESIGN.md) ·
 decisions: [`docs/ADRS.md`](docs/ADRS.md).
 
-> **Status: pre-1.0.** The packages are not published to npm/PyPI yet; consume via a git/path
-> dependency for now.
+> **Status: pre-1.0.** Published as `@devdash/ui` (npm), `devdash` (PyPI), and
+> `ghcr.io/anshulverma/devdash` (Docker) from each tagged release. See [Install](#install) for the
+> pre-first-release source fallback.
 
 ---
 
@@ -64,15 +65,28 @@ A devdash dashboard is a **build-time array of tabs** rendered by one shell:
 ## Install
 
 ```bash
-# UI (git dependency until published)
-pnpm add github:anshulverma/devdash#main --filter ./packages/ui   # or a path/workspace dep
-# Backend
-pip install "devdash @ git+https://github.com/anshulverma/devdash#subdirectory=packages/api"
-# optional adapters/importers:
-pip install "devdash[quickwit-redis]"   # httpx + redis, for the Quickwit+Redis log adapter
+# UI (npm)
+pnpm add @devdash/ui        # or: npm i @devdash/ui   /   yarn add @devdash/ui
+
+# Backend (PyPI)
+pip install devdash
+pip install "devdash[quickwit-redis]"   # optional: httpx + redis for the Quickwit+Redis log adapter
+pip install "devdash[claude-code]"      # optional: the ~/.claude token importer
+```
+
+Standalone Docker image (GHCR):
+
+```bash
+docker run -p 8000:8000 -v devdash-data:/data ghcr.io/anshulverma/devdash:latest
+# open http://localhost:8000/dev
 ```
 
 `@devdash/ui` declares `react` / `react-dom` as peer dependencies (>=18).
+
+> **Pre-release note:** the first tagged release (`v0.1.0`) has not been cut yet, so the registries
+> above are still empty. Until then, consume from source:
+> `pip install "devdash @ git+https://github.com/anshulverma/devdash#subdirectory=packages/api"`
+> and add `@devdash/ui` via a git/workspace dependency.
 
 ---
 
