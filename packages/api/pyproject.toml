@@ -1,0 +1,39 @@
+[project]
+name = "devdash"
+version = "0.0.0"
+description = "Pluggable operator/developer dashboard — backend (mountable FastAPI sub-app + standalone runner)."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.11"
+authors = [{ name = "Anshul Verma" }]
+dependencies = [
+    "fastapi",
+    "sqlalchemy[asyncio]",
+    "alembic",
+    "pydantic-settings",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-asyncio", "httpx", "ruff", "anyio"]
+
+[project.scripts]
+devdash = "devdash.__main__:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/devdash"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

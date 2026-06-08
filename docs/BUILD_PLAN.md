@@ -9,10 +9,10 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
 > here.
 
 ## M0 — Repo scaffold + CI + secret-scan gate
-- [ ] Apache-2.0 `LICENSE` committed
-- [ ] Monorepo: `packages/ui` (pnpm, Vite/React/TS, Tailwind preset stub), `packages/api`
+- [x] Apache-2.0 `LICENSE` committed
+- [x] Monorepo: `packages/ui` (pnpm, Vite/React/TS, Tailwind preset stub), `packages/api`
       (Python, `pyproject.toml`, async SQLAlchemy + alembic skeleton), `docker/`, `examples/host-app`
-- [ ] `pnpm build` and `pip install -e packages/api` both succeed
+- [x] `pnpm build` and `pip install -e packages/api` both succeed
 - [ ] CI (GitHub Actions): lint + typecheck + unit + build both packages, green
 - [ ] `gitleaks` (or equivalent) secret-scan gate runs on push
 

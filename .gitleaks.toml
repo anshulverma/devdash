@@ -1,0 +1,11 @@
+# devdash secret-scan config. Extends gitleaks defaults; add custom allowlist
+# paths here. Build artifacts and lockfiles are noise-prone, exclude them.
+[extend]
+useDefault = true
+
+[allowlist]
+paths = [
+  '''pnpm-lock\.yaml''',
+  '''uv\.lock''',
+  '''(^|/)dist/''',
+]
