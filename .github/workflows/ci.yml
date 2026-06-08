@@ -11,9 +11,6 @@ permissions:
 jobs:
   ui:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: packages/ui
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -23,7 +20,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
       - run: pnpm install --frozen-lockfile
-        working-directory: .
       - run: pnpm build
       - run: pnpm typecheck
       - run: pnpm test
@@ -38,9 +34,9 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - run: uv pip install --system -e '.[dev]'
-      - run: python -m pytest -q
-      - run: python -m ruff check .
+      - run: uv sync --extra dev
+      - run: uv run pytest -q
+      - run: uv run ruff check .
 
   secret-scan:
     runs-on: ubuntu-latest

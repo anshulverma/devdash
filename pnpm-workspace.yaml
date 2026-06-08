@@ -2,5 +2,7 @@ packages:
   - "packages/*"
   - "examples/*"
 
-onlyBuiltDependencies:
-  - esbuild
+# esbuild ships prebuilt platform binaries; allow its install script so pnpm
+# does not flag it as an un-approved build (fatal in frozen installs).
+allowBuilds:
+  esbuild: true
