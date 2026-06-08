@@ -5,12 +5,13 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **Milestone in progress:** M0 nearly done → starting **M1** (dashboard shell + tab-plugin API)
-- **Next concrete step:** implement `TabDescriptor` + `<DevDashboard>` + hash routing in
-  `packages/ui/src`, and add example-app deps (vite, @vitejs/plugin-react) so `examples/host-app`
-  renders the shell with 2 placeholder tabs + 1 custom tab.
-- **Known blockers:** none. (CI green is pending the first GitHub Actions run after push — verify
-  with `gh run list` next iteration.)
+- **M0 COMPLETE ✅** (CI run `27125399349` green: ui + api + secret-scan). Now starting **M1**
+  (dashboard shell + tab-plugin API).
+- **Next concrete step:** implement `TabDescriptor` + `<DevDashboard>` + shell-owned hash routing in
+  `packages/ui/src` (test-first with vitest + @testing-library/react), and add example-app deps
+  (vite, @vitejs/plugin-react) so `examples/host-app` renders the shell with 2 placeholder tabs + 1
+  custom tab. Honor D01 (build-time composition), D02 (mandatory scrollModel), D03 (shell-owned hash).
+- **Known blockers:** none.
 
 ## Environment notes
 - Node is **not** system-installed on this host; `scripts/bootstrap-node.sh` installs Node LTS
@@ -26,6 +27,9 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 1 (cont.) — M0 COMPLETE, CI green
+- Fixed CI: allowBuilds.esbuild (pnpm 11) + API uv venv. CI run 27125399349 all green (ui/api/secret-scan). All 5 M0 boxes ticked.
+
 ### 2026-06-08 — iteration 1 — M0 scaffold green
 - Installed a persistent Node toolchain (`scripts/bootstrap-node.sh`): node v24.16.0, npm 11.13.0,
   pnpm 11.5.2.
