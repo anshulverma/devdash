@@ -10,6 +10,7 @@ from .contract import (
 from .memory import InMemoryLogSource
 from .routes import build_logs_router
 from .source import LogSource
+from .sql import SqlLogSource
 
 __all__ = [
     "LogEntry",
@@ -20,4 +21,5 @@ __all__ = [
     "LogSource",
     "InMemoryLogSource",
     "build_logs_router",
+    "SqlLogSource",
 ]

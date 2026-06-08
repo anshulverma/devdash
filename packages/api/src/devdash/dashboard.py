@@ -79,6 +79,11 @@ class Dashboard:
                 from .migrations import migrate
 
                 await migrate(self._engine, self.config)
+            # Bind the engine to adapters that need it (e.g. the SQL log source),
+            # on the running loop after migration.
+            bind = getattr(self._log_source, "bind_engine", None)
+            if bind is not None:
+                await bind(self._engine)
             yield
         finally:
             engine, self._engine = self._engine, None

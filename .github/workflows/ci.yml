@@ -28,9 +28,25 @@ jobs:
 
   api:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: devdash
+          POSTGRES_PASSWORD: devdash
+          POSTGRES_DB: devdash
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: packages/api
+    env:
+      DEVDASH_TEST_PG_URL: postgresql+asyncpg://devdash:devdash@localhost:5432/devdash
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v6

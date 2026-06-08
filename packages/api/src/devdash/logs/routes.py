@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Header, HTTPException, Query
 from fastapi.responses import StreamingResponse
 
 from .contract import LogCapabilities, LogFacets, LogFilters, LogPage
@@ -63,11 +63,14 @@ def build_logs_router(source: LogSource, *, prefix: str = "/logs") -> APIRouter:
         levels: list[str] = Query(default=[]),
         search: str | None = None,
         prime: int = 100,
+        last_event_id: str | None = Header(default=None, alias="Last-Event-ID"),
     ) -> StreamingResponse:
         caps = source.capabilities()
         if not caps.can_tail:
             raise HTTPException(status_code=501, detail="adapter does not support tail")
-        filters = _filters(services, levels, search, None, None, prime, None)
+        # On reconnect the browser sends Last-Event-ID; cursor-capable adapters
+        # resume after it (others ignore it; the UI dedups any prime overlap).
+        filters = _filters(services, levels, search, None, None, prime, last_event_id)
 
         async def stream():
             try:

@@ -5,13 +5,12 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅. M3 in progress** (boxes 1,2,5 done — Logs tab works end-to-end with
-  the in-memory adapter). Remaining: box 3 (Quickwit+Redis) + box 4 (Postgres adapter). M4 may interleave.
-- **Next concrete step (M3 box 3):** add the Quickwit+Redis composite LogSource adapter in
-  `packages/api` (Quickwit search/enumerate + Redis-Streams tail; capabilities can_search∧can_tail;
-  degrades to tail-only when Quickwit is unreachable). Then box 4: single-Postgres adapter (a `logs`
-  table on devdash.metadata, ILIKE/tsvector search, cursor-poll tail; real Last-Event-ID resume via
-  the cursor). Use testcontainers or skip-if-unavailable markers since these need real services.
+- **M0 + M1 + M2 COMPLETE ✅. M3 in progress** (boxes 1,2,4,5 done). Only box 3 (Quickwit+Redis
+  composite) remains in M3. M4 (Phases) may interleave / come next.
+- **Next concrete step:** either M3 box 3 (Quickwit+Redis composite adapter — Quickwit search +
+  Redis-Streams tail; degrade to tail-only when search is down; needs both services, test via docker
+  + skip-if-unavailable), OR start **M4 (Phases tracker)** which is independent and unblocks the
+  completion criterion (example runs Phases tab). Recommend M4 next, then circle back to box 3.
 - **Known blockers:** none.
 
 ## Environment notes
@@ -28,6 +27,11 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 6 — M3 box 4: SQL/Postgres LogSource adapter COMPLETE
+- SqlLogSource: a `devdash_logs` table in devdash's OWNED database (self-managed via bind_engine, expand-only checkfirst; BigInteger id with sqlite Integer variant for rowid autoincrement). Portable substring search (case-insensitive LIKE), enumerate, cursor-poll tail on the autoincrement id (the stable id, D04) → real Last-Event-ID resume (cursor_pagination=True). ingest() mixin (not on the protocol, D06).
+- Wired: dashboard lifespan binds the engine to bindable log sources after migrate; tail route reads the Last-Event-ID header into the resume cursor.
+- **Verified:** 11/11 parametrized adapter tests pass on BOTH SQLite and real Postgres 17 (via docker); full backend pytest 27/27, ruff clean. Added a Postgres service to the CI api job (DEVDASH_TEST_PG_URL) so the PG path runs on every push.
+
 ### 2026-06-08 — iteration 5 — M3 boxes 2+5: logsTab UI + example COMPLETE
 - @devdash/ui logs module: LogsClient transport abstraction; httpLogsClient (REST + SSE EventSource) and inMemoryLogsClient (client-side, fully working, push() drives the tail); capability-driven LogsTab (search box only when can_search, live toggle when can_tail, level chips from facets, bounded 5000 ring + dedup-by-id + drop-oldest gap marker in the status strip, declared search-mode label, JSON detail panel); logsTab(config) factory (scrollModel 'chrome').
 - Backend SSE now emits per-event `id:` so EventSource auto-resumes via Last-Event-ID on reconnect (true server-side resume-from-cursor lands with the Postgres/Redis cursor adapters).
