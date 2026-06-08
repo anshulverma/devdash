@@ -101,3 +101,94 @@ async def delete_session(engine: AsyncEngine, session_id: int) -> bool:
     async with engine.begin() as conn:
         res = await conn.execute(delete(m.sessions).where(m.sessions.c.id == session_id))
     return res.rowcount > 0
+
+
+async def import_token_rows(engine: AsyncEngine, rows: list, price_table) -> dict:
+    """Idempotent (on message_uuid) provider-neutral token ingest. Computes cost
+    from the price table when a row omits it; unknown models yield cost 0 and a
+    warning (ADR-D08). `rows` are TokenRow; `price_table` is a PriceTable."""
+    from .tokens import ImportResult
+
+    result = ImportResult()
+    unknown: set[str] = set()
+    if not rows:
+        return result.model_dump()
+    now = _now()
+    async with engine.begin() as conn:
+        uuids = [r.message_uuid for r in rows]
+        existing = {
+            r[0]
+            for r in (
+                await conn.execute(
+                    select(m.token_usage.c.message_uuid).where(
+                        m.token_usage.c.message_uuid.in_(uuids)
+                    )
+                )
+            ).all()
+        }
+        for r in rows:
+            if r.message_uuid in existing:
+                result.skipped += 1
+                continue
+            cost = r.cost_usd
+            if cost is None:
+                cost = price_table.cost(
+                    r.model,
+                    input_tokens=r.input_tokens,
+                    output_tokens=r.output_tokens,
+                    cache_read_tokens=r.cache_read_tokens,
+                    cache_creation_tokens=r.cache_creation_tokens,
+                )
+                if cost is None:
+                    unknown.add(r.model)
+                    cost = 0.0
+            await conn.execute(
+                insert(m.token_usage).values(
+                    dev_name=r.dev_name,
+                    message_uuid=r.message_uuid,
+                    ts=r.ts,
+                    provider=r.provider,
+                    model=r.model,
+                    input_tokens=r.input_tokens,
+                    output_tokens=r.output_tokens,
+                    cache_read_tokens=r.cache_read_tokens,
+                    cache_creation_tokens=r.cache_creation_tokens,
+                    cost_usd=cost,
+                    created_at=now,
+                )
+            )
+            result.imported += 1
+            existing.add(r.message_uuid)  # dedup within the same batch
+    result.unknown_models = sorted(unknown)
+    return result.model_dump()
+
+
+async def token_stats(engine: AsyncEngine) -> dict:
+    from sqlalchemy import func
+
+    async with engine.connect() as conn:
+        totals = (
+            await conn.execute(
+                select(
+                    func.count(m.token_usage.c.id),
+                    func.coalesce(func.sum(m.token_usage.c.input_tokens), 0),
+                    func.coalesce(func.sum(m.token_usage.c.output_tokens), 0),
+                    func.coalesce(func.sum(m.token_usage.c.cost_usd), 0.0),
+                )
+            )
+        ).one()
+        by_model_rows = (
+            await conn.execute(
+                select(
+                    m.token_usage.c.model,
+                    func.coalesce(func.sum(m.token_usage.c.cost_usd), 0.0),
+                ).group_by(m.token_usage.c.model)
+            )
+        ).all()
+    return {
+        "messages": totals[0],
+        "input_tokens": int(totals[1]),
+        "output_tokens": int(totals[2]),
+        "cost_usd": float(totals[3]),
+        "by_model": {r[0]: float(r[1]) for r in by_model_rows},
+    }

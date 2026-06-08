@@ -5,13 +5,13 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (box 3 Quickwit+Redis left). **M4: boxes 1,2
-  done** (tables+alembic; taxonomy host-config + phases REST routes).
-- **Next concrete step (M4 box 3):** provider-neutral token ingest — POST /phases/tokens/import
-  (message_uuid/ts/provider/model/token-counts/optional cost/dev_name), compute cost server-side
-  from the host PriceTable, unknown-model -> cost 0 + warn (D08). Bundle a `[claude-code]` importer
-  CLI/adapter that parses ~/.claude JSONL into that contract. Then box 4 (projection + manual mode +
-  commit-msg hook), box 5 (phasesTab UI + example), and M3 box 3 (Quickwit+Redis).
+- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (box 3 Quickwit+Redis left). **M4: boxes 1,2,3
+  done** (tables+alembic; taxonomy; provider-neutral token ingest + claude-code importer).
+- **Next concrete step (M4 box 4):** complexity-weighted projection (finish-date/burn-rate) with a
+  `method:'none'` path when the taxonomy lacks complexity; degraded manual-session mode (no
+  taxonomy/git → untagged sessions, already works); a lib-provided host-configured `commit-msg`
+  git hook that validates the tag prefix against the host phase keys. Snapshot into
+  projection_snapshots. Then box 5 (phasesTab UI + example), and M3 box 3 (Quickwit+Redis).
 - **Known blockers:** none.
 
 ## Environment notes
@@ -28,6 +28,11 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 9 — M4 box 3: token ingest + claude-code importer COMPLETE
+- phases/tokens.py: TokenRow contract + ImportResult. repository.import_token_rows (idempotent on message_uuid; cost from host PriceTable; unknown model -> cost 0 + reported, D08) + token_stats (totals + by_model). routes: POST /phases/tokens/import, GET /phases/tokens/stats.
+- importers/claude_code.py: pure-stdlib parser of ~/.claude JSONL transcripts -> TokenRow (parse_lines/parse_files/discover); `python -m devdash import-tokens --dev --url [--token] [--glob]` CLI POSTs via urllib. `[claude-code]` optional extra registered.
+- **Verified:** backend pytest 38/38 (4 new: parser, cost-from-price-table, unknown-model->0+warn, idempotent), ruff clean, uv sync with new extra ok.
+
 ### 2026-06-08 — iteration 8 — M4 box 2: taxonomy host-config + phases routes COMPLETE
 - phases/taxonomy.py: PhaseSpec / InferenceRules (tag_regex + path_patterns + subject_keywords) / PriceTable (cost() returns None for unknown models, D08) / PhaseTrackerConfig (from_dict). All host config; word 'phase' kept.
 - phases/repository.py: seed_phases (insert-missing, non-destructive, idempotent), list_phases, sessions CRUD. phases/routes.py: GET /phases/phases (merges DB row + taxonomy color), GET/POST/PUT/DELETE /phases/sessions.

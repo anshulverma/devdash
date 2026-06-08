@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from . import repository as repo
 from .taxonomy import PhaseTrackerConfig
+from .tokens import ImportResult, TokenRow
 
 EngineDep = Callable[..., AsyncEngine]
 
@@ -81,5 +82,17 @@ def build_phases_router(
     ) -> None:
         if not await repo.delete_session(engine, session_id):
             raise HTTPException(status_code=404, detail="session not found")
+
+    @router.post("/tokens/import", response_model=ImportResult)
+    async def import_tokens(
+        rows: list[TokenRow], engine: AsyncEngine = Depends(engine_dep)
+    ) -> ImportResult:
+        # Provider-neutral; cost computed from the host price table; unknown
+        # models -> cost 0 + reported (ADR-D08). Idempotent on message_uuid.
+        return ImportResult(**await repo.import_token_rows(engine, rows, config.prices))
+
+    @router.get("/tokens/stats")
+    async def tokens_stats(engine: AsyncEngine = Depends(engine_dep)) -> dict:
+        return await repo.token_stats(engine)
 
     return router
