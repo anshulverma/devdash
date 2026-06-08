@@ -5,9 +5,10 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0–M4 ALL COMPLETE ✅** (27/27 feature boxes). Only M5 (release pipeline — human-gated publish)
-  remains, which is OUT of the completion criterion. The example runs BOTH Logs (in-memory) + Phases
-  tabs end-to-end.
+- **✅ BUILD COMPLETE (M0–M4, 27/27 feature boxes).** Verified green: pnpm build, pnpm test (27/27),
+  backend pytest (60 passed in CI with all services; 51+2-skipped locally), ruff. The example runs
+  BOTH Logs (in-memory) + Phases tabs end-to-end. Only M5 (release — human-gated publish) remains,
+  which is OUTSIDE the completion criterion.
 - **Next (optional, M5 — human-gated):** lockstep version + contract handshake (already exists);
   OpenAPI client drift gate; npm/PyPI/GHCR publish workflow (configure, do NOT fire). M5 is outside
   the M0–M4 completion criterion.
