@@ -78,3 +78,17 @@ export type {
   InMemoryLogsClient,
   InMemoryLogsClientOptions,
 } from './logs'
+
+// Phases tab (built-in)
+export { phasesTab, PhasesTab, httpPhasesClient, inMemoryPhasesClient } from './phases'
+export type {
+  PhasesTabConfig,
+  Phase,
+  Session,
+  TokenStats,
+  Projection,
+  ProjectionMethod,
+  PhasesClient,
+  HttpPhasesClientOptions,
+  InMemoryPhasesData,
+} from './phases'

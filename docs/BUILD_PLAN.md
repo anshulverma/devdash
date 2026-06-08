@@ -56,7 +56,7 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
 - [x] Phase taxonomy + git-inference rules + price table as host config (keep word `phase`)
 - [x] Provider-neutral token ingest; bundled `[claude-code]` importer (D08); unknown-model → cost 0 + warn
 - [x] Projection optional (`method:"none"`); degraded manual-session mode; lib-provided `commit-msg` hook
-- [ ] `phasesTab(config)` UI uses `CategoryColorProvider`; a host with a sample taxonomy tracks
+- [x] `phasesTab(config)` UI uses `CategoryColorProvider`; a host with a sample taxonomy tracks
       sessions + tokens + projection end-to-end in `examples/host-app`
 
 ## M5 — Release pipeline + example canary

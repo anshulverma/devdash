@@ -5,14 +5,14 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (box 3 Quickwit+Redis left). **M4: boxes
-  1,2,3,4 done.** Only M4 box 5 (phasesTab UI + example) + M3 box 3 remain.
-- **Next concrete step (M4 box 5 — unblocks COMPLETION):** in `@devdash/ui`, add a PhasesClient
-  (httpPhasesClient over the /phases REST) + a `phasesTab(config)` (scrollModel 'scroll') rendering
-  the phase table (CategoryColorProvider for colors), token stats, and the projection card (hide
-  finish-date when method==='none'). Wire phasesTab into examples/host-app with a sample taxonomy +
-  an in-memory/HTTP client so the example runs the Phases tab end-to-end. Then M3 box 3
-  (Quickwit+Redis).
+- **M0, M1, M2, M4 COMPLETE ✅. M3: boxes 1,2,4,5 done — only M3 box 3 (Quickwit+Redis) remains** in
+  the entire M0–M4 plan. The example runs BOTH Logs (in-memory) + Phases tabs end-to-end.
+- **Next concrete step (THE LAST BOX — M3 box 3):** Quickwit+Redis composite LogSource adapter in
+  `packages/api` — Quickwit search/enumerate + Redis-Streams tail (one composite reporting
+  can_search∧can_tail; degrade to tail-only when Quickwit is unreachable). Needs both services; test
+  via docker (Redis easy; Quickwit heavier) with skip-if-unavailable markers, mirroring the PG
+  approach. When green + ticked, ALL M0–M4 boxes are checked and the example already runs Logs +
+  Phases end-to-end → emit the completion promise.
 - **Known blockers:** none.
 
 ## Environment notes
@@ -29,6 +29,11 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 11 — M4 box 5: phasesTab UI + example end-to-end COMPLETE (M4 DONE)
+- @devdash/ui phases module: PhasesClient (httpPhasesClient over /phases REST + inMemoryPhasesClient for demo/tests); PhasesTab — projection card (finish-date when calibrated; 'add complexity' when method none), AI cost + messages cards, phase table with CategoryColorProvider color dots; phasesTab(config) factory (scrollModel 'scroll').
+- examples/host-app now mounts BOTH phasesTab (sample taxonomy + colors via categoryColor) AND logsTab (in-memory) — runs Logs + Phases end-to-end.
+- **Verified:** vitest 27/27 (5 new phases tests), backend pytest 48/48, ruff clean, UI build + example typecheck + vite build green, leak scan clean. ALL M4 boxes ticked.
+
 ### 2026-06-08 — iteration 10 — M4 box 4: projection + manual mode + commit-msg hook COMPLETE
 - phases/projection.py: complexity-weighted compute_projection -> method none|naive|calibrated (none when no complexity; naive when nothing done; calibrated gives target/remaining/burn/finish-date). repository.projection_inputs + snapshot_projection; GET /phases/projection route.
 - Degraded manual-session mode verified (no taxonomy -> sessions work, projection 'none').

@@ -8,6 +8,8 @@ import {
   useTabQuery,
   logsTab,
   inMemoryLogsClient,
+  phasesTab,
+  inMemoryPhasesClient,
   type TabDescriptor,
   type TabProps,
   type QueryCodec,
@@ -103,8 +105,29 @@ setInterval(() => {
   logs.push(entry)
 }, 2000)
 
+// --- The built-in Phases tab on the client-side in-memory client ----------
+const SAMPLE_PHASES = [
+  { phase: 'ui', label: 'UI', status: 'in_progress', complexity: 5 },
+  { phase: 'api', label: 'API', status: 'done', complexity: 3 },
+  { phase: 'infra', label: 'Infra', status: 'pending', complexity: 4 },
+]
+const phaseColors: Record<string, string> = { ui: '#3b6ea5', api: '#2e7d4f', infra: '#b8860b' }
+const phasesClient = inMemoryPhasesClient({
+  phases: SAMPLE_PHASES,
+  tokenStats: { messages: 128, input_tokens: 90_000, output_tokens: 12_000, cost_usd: 4.2, by_model: { 'demo-model': 4.2 } },
+  projection: {
+    method: 'calibrated',
+    cumulative_sec: 36_000,
+    remaining_sec: 72_000,
+    target_sec: 108_000,
+    burn_per_day_sec: 7200,
+    projected_finish_date: '2026-07-15',
+  },
+})
+
 const tabs: TabDescriptor[] = [
   { id: 'overview', label: 'Overview', scrollModel: 'scroll', component: Overview },
+  phasesTab({ client: phasesClient }),
   logsTab({ client: logs }),
   { id: 'records', label: 'Records', scrollModel: 'chrome', component: Records },
   { id: 'about', label: 'About', scrollModel: 'scroll', component: About },
@@ -116,7 +139,7 @@ createRoot(document.getElementById('root')!).render(
       tabs={tabs}
       branding={{ wordmark: 'Example / Dev' }}
       theme={{ 'color-primary': '#3b6ea5', 'color-on-surface': '#1f2225' }}
-      categoryColor={(key) => (key === 'error' ? '#c0392b' : undefined)}
+      categoryColor={(key) => phaseColors[key]}
     />
   </StrictMode>,
 )
