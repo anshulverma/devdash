@@ -6,5 +6,21 @@ transcript importer) is host config/adapters.
 """
 
 from . import models
+from .routes import build_phases_router
+from .taxonomy import (
+    InferenceRules,
+    ModelRate,
+    PhaseSpec,
+    PhaseTrackerConfig,
+    PriceTable,
+)
 
-__all__ = ["models"]
+__all__ = [
+    "models",
+    "build_phases_router",
+    "PhaseTrackerConfig",
+    "PhaseSpec",
+    "InferenceRules",
+    "PriceTable",
+    "ModelRate",
+]

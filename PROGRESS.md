@@ -5,15 +5,13 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (only box 3 Quickwit+Redis left). **M4: box 1
-  done** (phase tables + alembic baseline in devdash's owned DB).
-- **Next concrete step (M4 box 2):** in `packages/api`, add the host phase **taxonomy** config (a
-  YAML/dict of phases with label/status/complexity/display_order/parent/color — keep the word
-  `phase`), seed `devdash_phase_config` from it on startup, and add the phases REST routes
-  (GET phases, sessions CRUD). Git-inference rules + price table as host config. Then box 3 (token
-  ingest + importer), box 4 (projection + manual mode + commit-msg hook), box 5 (phasesTab UI +
-  example). Migrations now use alembic (run_sync, advisory-locked) — add a new revision per schema
-  change, not create_all.
+- **M0 + M1 + M2 COMPLETE ✅. M3: boxes 1,2,4,5 done** (box 3 Quickwit+Redis left). **M4: boxes 1,2
+  done** (tables+alembic; taxonomy host-config + phases REST routes).
+- **Next concrete step (M4 box 3):** provider-neutral token ingest — POST /phases/tokens/import
+  (message_uuid/ts/provider/model/token-counts/optional cost/dev_name), compute cost server-side
+  from the host PriceTable, unknown-model -> cost 0 + warn (D08). Bundle a `[claude-code]` importer
+  CLI/adapter that parses ~/.claude JSONL into that contract. Then box 4 (projection + manual mode +
+  commit-msg hook), box 5 (phasesTab UI + example), and M3 box 3 (Quickwit+Redis).
 - **Known blockers:** none.
 
 ## Environment notes
@@ -30,6 +28,12 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 8 — M4 box 2: taxonomy host-config + phases routes COMPLETE
+- phases/taxonomy.py: PhaseSpec / InferenceRules (tag_regex + path_patterns + subject_keywords) / PriceTable (cost() returns None for unknown models, D08) / PhaseTrackerConfig (from_dict). All host config; word 'phase' kept.
+- phases/repository.py: seed_phases (insert-missing, non-destructive, idempotent), list_phases, sessions CRUD. phases/routes.py: GET /phases/phases (merges DB row + taxonomy color), GET/POST/PUT/DELETE /phases/sessions.
+- Wired phases_config through Dashboard/make_dashboard_app/mount_dashboard/dashboard_lifespan; lifespan seeds phase_config after migrate; router mounted when 'phases' enabled.
+- **Verified:** backend pytest 34/34 (8 new: taxonomy from_dict, price unknown->None, seed idempotent+non-destructive, GET phases color/order, full session CRUD incl. 404), ruff clean.
+
 ### 2026-06-08 — iteration 7 — M4 box 1: phase tables + alembic baseline COMPLETE
 - phases/models.py: 7 tables on devdash.metadata (sessions, token_usage, phase_config, phase_transitions, developers, dev_settings, projection_snapshots; BigInteger ids with sqlite Integer variant).
 - Switched migrate() from create_all to ALEMBIC: programmatic Config + _alembic/ env.py (async run_sync pattern) + 0001_baseline. Postgres holds a session-level advisory lock on a separate connection spanning alembic's transaction; sqlite path is lock-free. Default alembic_version table (devdash owns the whole DB).
