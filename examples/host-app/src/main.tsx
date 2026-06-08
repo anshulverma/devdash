@@ -6,9 +6,12 @@ import {
   FilterChips,
   StatusStrip,
   useTabQuery,
+  logsTab,
+  inMemoryLogsClient,
   type TabDescriptor,
   type TabProps,
   type QueryCodec,
+  type LogEntry,
 } from '@devdash/ui'
 
 // --- A placeholder "scroll" tab -------------------------------------------
@@ -80,8 +83,29 @@ function Records(_props: TabProps) {
   )
 }
 
+// --- The built-in Logs tab on the client-side in-memory adapter -----------
+// A real, working logs viewer with no backend: it searches the seed data and
+// tails synthetic entries pushed on a timer.
+const LEVELS = ['info', 'warn', 'error']
+const logs = inMemoryLogsClient([
+  { id: 'seed-1', ts: new Date(0).toISOString(), level: 'info', message: 'demo log viewer ready', service: 'demo' },
+])
+let n = 0
+setInterval(() => {
+  n += 1
+  const entry: LogEntry = {
+    id: `live-${n}`,
+    ts: new Date(n * 1000).toISOString(),
+    level: LEVELS[n % 3] as string,
+    message: `synthetic event #${n}`,
+    service: 'demo',
+  }
+  logs.push(entry)
+}, 2000)
+
 const tabs: TabDescriptor[] = [
   { id: 'overview', label: 'Overview', scrollModel: 'scroll', component: Overview },
+  logsTab({ client: logs }),
   { id: 'records', label: 'Records', scrollModel: 'chrome', component: Records },
   { id: 'about', label: 'About', scrollModel: 'scroll', component: About },
 ]

@@ -59,3 +59,22 @@ export {
   type UseEventSourceTailOptions,
   type EventSourceLike,
 } from './hooks/useEventSourceTail'
+
+// Logs tab (built-in)
+export { logsTab, LogsTab, httpLogsClient, inMemoryLogsClient } from './logs'
+export type {
+  LogsTabConfig,
+} from './logs'
+export type {
+  LogEntry,
+  LogFilters as LogQueryFilters,
+  LogPage,
+  LogFacets,
+  LogCapabilities,
+  LogsClient,
+  TailHandlers,
+  TextSearchMode,
+  HttpLogsClientOptions,
+  InMemoryLogsClient,
+  InMemoryLogsClientOptions,
+} from './logs'

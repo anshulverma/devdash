@@ -75,7 +75,12 @@ def build_logs_router(source: LogSource, *, prefix: str = "/logs") -> APIRouter:
                 data = "".join(f"data: {e.model_dump_json()}\n" for e in page.entries)
                 yield f"event: prime\n{data}\n"
                 async for entry in source.tail(filters):
-                    yield f"event: entry\ndata: {entry.model_dump_json()}\n\n"
+                    # Emit per-event `id:` so the browser EventSource tracks
+                    # lastEventId and auto-resumes via Last-Event-ID on reconnect.
+                    yield (
+                        f"event: entry\nid: {entry.id}\n"
+                        f"data: {entry.model_dump_json()}\n\n"
+                    )
             except Exception as exc:  # noqa: BLE001 - surface as a terminal SSE error
                 yield f"event: error\ndata: {exc}\n\n"
 

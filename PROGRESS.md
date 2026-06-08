@@ -5,12 +5,13 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅. M3 in progress** (box 1 done — LogSource backend). Box 2 (logsTab UI)
-  next; then adapters (boxes 3,4); M4 may interleave.
-- **Next concrete step (M3 box 2):** in `@devdash/ui`, add a `LogsClient` interface (search/tail/
-  enumerate/capabilities), an `httpLogsClient(baseUrl)` (talks to the backend REST+SSE) and an
-  `inMemoryLogsClient(entries)` (client-side demo), a capability-driven `LogsTab`, and a
-  `logsTab(config)` factory (scrollModel 'chrome'). Wire it into examples/host-app (box 5).
+- **M0 + M1 + M2 COMPLETE ✅. M3 in progress** (boxes 1,2,5 done — Logs tab works end-to-end with
+  the in-memory adapter). Remaining: box 3 (Quickwit+Redis) + box 4 (Postgres adapter). M4 may interleave.
+- **Next concrete step (M3 box 3):** add the Quickwit+Redis composite LogSource adapter in
+  `packages/api` (Quickwit search/enumerate + Redis-Streams tail; capabilities can_search∧can_tail;
+  degrades to tail-only when Quickwit is unreachable). Then box 4: single-Postgres adapter (a `logs`
+  table on devdash.metadata, ILIKE/tsvector search, cursor-poll tail; real Last-Event-ID resume via
+  the cursor). Use testcontainers or skip-if-unavailable markers since these need real services.
 - **Known blockers:** none.
 
 ## Environment notes
@@ -27,6 +28,12 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 5 — M3 boxes 2+5: logsTab UI + example COMPLETE
+- @devdash/ui logs module: LogsClient transport abstraction; httpLogsClient (REST + SSE EventSource) and inMemoryLogsClient (client-side, fully working, push() drives the tail); capability-driven LogsTab (search box only when can_search, live toggle when can_tail, level chips from facets, bounded 5000 ring + dedup-by-id + drop-oldest gap marker in the status strip, declared search-mode label, JSON detail panel); logsTab(config) factory (scrollModel 'chrome').
+- Backend SSE now emits per-event `id:` so EventSource auto-resumes via Last-Event-ID on reconnect (true server-side resume-from-cursor lands with the Postgres/Redis cursor adapters).
+- examples/host-app: real Logs tab on the in-memory adapter, seeded + a 2s timer pushing synthetic live entries.
+- **Verified:** vitest 22/22 (6 new logs tests incl. capability gating), backend pytest 21/21, ruff clean, UI build + example vite build green, leak scan clean.
+
 ### 2026-06-08 — iteration 4 — M3 box 1: LogSource backend abstraction COMPLETE
 - logs subpackage: LogEntry contract (open fields, optional service, adapter-supplied stable id D04), LogFilters/LogPage/LogFacets, LogCapabilities (declared text_search D05). LogSource Protocol (search/tail/enumerate/capabilities); ingest is NOT on the protocol (D06).
 - InMemoryLogSource (default adapter + test/demo): substring search, facets, live tail via subscriber queues, append() ingest mixin assigns stable ids + ring-trims.
