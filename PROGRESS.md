@@ -5,12 +5,13 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 COMPLETE ✅.** Now starting **M2** (backend mount model + engine lifecycle + own DB).
-- **Next concrete step:** in `packages/api`, implement `make_dashboard_app(config)` +
-  `mount_dashboard()` (D09) and `dashboard_lifespan(config)` building the async engine in-loop (D10,
-  fixes cross-loop flake). Add `DevDashConfig` (pydantic-settings, `DEVDASH_` env). Write a pytest
-  that mounts the sub-app into a host FastAPI app with no cross-loop error. Then the own-DB
-  provisioning (`devdash db create`) + expand-only advisory-locked `devdash.migrate()`.
+- **M0 + M1 + M2 COMPLETE ✅.** Now starting **M3** (LogSource abstraction + adapters) — M3 and M4
+  may interleave.
+- **Next concrete step (M3):** in `packages/api`, define the `LogSource` protocol
+  (`search`/`tail`/`enumerate`/`capabilities`), the `LogEntry` contract (open `fields`, optional
+  `service`, stable id — D04), declared search semantics (D05), ingest-out-of-core (D06). Ship the
+  in-memory adapter (default), a `logsTab(config)` factory + capability-driven UI in `@devdash/ui`,
+  and the SSE prime/entry/error tail. Register any adapter tables on `devdash.metadata`.
 - **Known blockers:** none.
 
 ## Environment notes
@@ -27,6 +28,13 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 3 — M2 backend mount + engine lifecycle + own DB COMPLETE
+- make_dashboard_app + mount_dashboard (sub-app factory, D09); dashboard_lifespan builds the async engine IN-LOOP (D10) and disposes on shutdown; engine never module-global.
+- DevDashConfig (pydantic-settings, DEVDASH_ env); auth (open+warn / bearer / host hook); explicit CORS (never *); metrics opt-in. /__devdash/meta handshake (D12); honest 503 when lifespan unwired.
+- Own DB (D07): devdash.metadata, expand-only advisory-locked migrate(), create_database() + `python -m devdash db create`; owner/app role recipe in docs/OPERATIONS.md.
+- Standalone runner serves API + bundled UI (StaticFiles, placeholder until M5); verified the wheel ships devdash/static/.
+- **Verified:** pytest 13/13 (incl. no-cross-loop mount regression test), ruff clean, wheel builds + includes static, `python -m devdash db create` works on sqlite.
+
 ### 2026-06-08 — iteration 2 — M1 dashboard shell + tab-plugin API COMPLETE
 - @devdash/ui shell: TabDescriptor (mandatory scrollModel D02, freeform id, lazy-able), <DevDashboard> build-time composition (D01), shell-owned #<id>?<params> routing + useTabQuery (D03), DevDashboardProvider/useDevDash, CategoryColorProvider, neutral theme + themeToCssVars, per-tab TabErrorBoundary + Suspense, duplicate-id throw, unknown-hash fallback, zero-tabs empty state.
 - Primitives exported: RecordTable, FilterChips, TimeRangePicker, JsonDetailPanel, StatusStrip, useEventSourceTail (ring + dedup-by-id + drop-oldest).

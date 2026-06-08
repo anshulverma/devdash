@@ -1,14 +1,70 @@
-"""Standalone runner entrypoint (`python -m devdash`). Fleshed out in M2."""
+"""Standalone runner — ``python -m devdash``.
+
+Subcommands:
+  serve (default)  build the dashboard app and serve it with uvicorn.
+  db create        provision the devdash-owned database, then migrate.
+"""
+
+from __future__ import annotations
+
+import argparse
+import asyncio
+
+from .config import DevDashConfig
 
 
-def main() -> None:
-    print(f"devdash standalone runner (skeleton) — contract v{_contract()}")
+def main(argv: list[str] | None = None) -> None:
+    parser = argparse.ArgumentParser(prog="devdash")
+    sub = parser.add_subparsers(dest="command")
+
+    serve = sub.add_parser("serve", help="serve the dashboard (default)")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
+
+    db = sub.add_parser("db", help="database operations")
+    db_sub = db.add_subparsers(dest="db_command")
+    db_sub.add_parser("create", help="create the devdash-owned database, then migrate")
+
+    args = parser.parse_args(argv)
+    config = DevDashConfig()
+
+    if args.command == "db" and args.db_command == "create":
+        _db_create(config)
+        return
+
+    _serve(config, host=getattr(args, "host", "127.0.0.1"), port=getattr(args, "port", 8000))
 
 
-def _contract() -> int:
-    from devdash import CONTRACT_VERSION
+def _db_create(config: DevDashConfig) -> None:
+    from .db import dispose_engine, make_engine
+    from .migrations import create_database, migrate
 
-    return CONTRACT_VERSION
+    async def run() -> None:
+        created = await create_database(config.database_url)
+        print(f"database {'created' if created else 'already present'}: {_safe_url(config)}")
+        engine = make_engine(config.database_url)
+        try:
+            await migrate(engine, config)
+            print("migrate complete")
+        finally:
+            await dispose_engine(engine)
+
+    asyncio.run(run())
+
+
+def _serve(config: DevDashConfig, *, host: str, port: int) -> None:
+    import uvicorn
+
+    from .dashboard import make_dashboard_app
+
+    app = make_dashboard_app(config)
+    uvicorn.run(app, host=host, port=port)
+
+
+def _safe_url(config: DevDashConfig) -> str:
+    from sqlalchemy.engine import make_url
+
+    return make_url(config.database_url).render_as_string(hide_password=True)
 
 
 if __name__ == "__main__":

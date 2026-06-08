@@ -12,10 +12,20 @@ dependencies = [
     "alembic",
     "pydantic-settings",
     "uvicorn",
+    "asyncpg>=0.31.0",
+    "prometheus-fastapi-instrumentator>=8.0.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pytest-asyncio", "httpx", "ruff", "anyio"]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "httpx",
+    "ruff",
+    "anyio",
+    "aiosqlite>=0.22.1",
+    "greenlet>=3.5.1",
+]
 
 [project.scripts]
 devdash = "devdash.__main__:main"
@@ -33,6 +43,9 @@ src = ["src", "tests"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = ["fastapi.Depends", "fastapi.Header", "fastapi.Query"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

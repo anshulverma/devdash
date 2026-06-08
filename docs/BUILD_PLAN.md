@@ -30,14 +30,14 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
       works; a thrown tab is isolated
 
 ## M2 — Backend mount model + engine lifecycle + own DB
-- [ ] `make_dashboard_app(config)` + `mount_dashboard(host_app, config, path)` (D09)
-- [ ] `dashboard_lifespan(config)`: engine built in-loop, DI to modules, disposed on shutdown (D10);
+- [x] `make_dashboard_app(config)` + `mount_dashboard(host_app, config, path)` (D09)
+- [x] `dashboard_lifespan(config)`: engine built in-loop, DI to modules, disposed on shutdown (D10);
       pytest mounts the sub-app in a host app with **no cross-loop error**
-- [ ] `DevDashConfig` (Pydantic settings, `DEVDASH_` env); auth (bearer + hook + open-with-warning);
+- [x] `DevDashConfig` (Pydantic settings, `DEVDASH_` env); auth (bearer + hook + open-with-warning);
       explicit CORS; metrics opt-in
-- [ ] devdash owns its DB: `devdash db create` provisioning; expand-only + advisory-locked
+- [x] devdash owns its DB: `devdash db create` provisioning; expand-only + advisory-locked
       `devdash.migrate()`; documented owner/app role recipe
-- [ ] `python -m devdash` standalone runner serves the shell + UI bundle; `GET
+- [x] `python -m devdash` standalone runner serves the shell + UI bundle; `GET
       {base_path}/__devdash/meta` handshake
 
 ## M3 — `LogSource` abstraction + adapters
