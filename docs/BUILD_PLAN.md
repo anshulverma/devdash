@@ -41,7 +41,7 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
       {base_path}/__devdash/meta` handshake
 
 ## M3 — `LogSource` abstraction + adapters
-- [ ] `LogSource` protocol (`search`/`tail`/`enumerate`/`capabilities`); `LogEntry` contract (open
+- [x] `LogSource` protocol (`search`/`tail`/`enumerate`/`capabilities`); `LogEntry` contract (open
       `fields`, optional `service`); stable entry id (D04); declared search semantics (D05);
       ingest-out-of-core (D06)
 - [ ] In-memory adapter (default/test); `logsTab(config)` factory; capability-driven UI;

@@ -5,13 +5,12 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0 + M1 + M2 COMPLETE ✅.** Now starting **M3** (LogSource abstraction + adapters) — M3 and M4
-  may interleave.
-- **Next concrete step (M3):** in `packages/api`, define the `LogSource` protocol
-  (`search`/`tail`/`enumerate`/`capabilities`), the `LogEntry` contract (open `fields`, optional
-  `service`, stable id — D04), declared search semantics (D05), ingest-out-of-core (D06). Ship the
-  in-memory adapter (default), a `logsTab(config)` factory + capability-driven UI in `@devdash/ui`,
-  and the SSE prime/entry/error tail. Register any adapter tables on `devdash.metadata`.
+- **M0 + M1 + M2 COMPLETE ✅. M3 in progress** (box 1 done — LogSource backend). Box 2 (logsTab UI)
+  next; then adapters (boxes 3,4); M4 may interleave.
+- **Next concrete step (M3 box 2):** in `@devdash/ui`, add a `LogsClient` interface (search/tail/
+  enumerate/capabilities), an `httpLogsClient(baseUrl)` (talks to the backend REST+SSE) and an
+  `inMemoryLogsClient(entries)` (client-side demo), a capability-driven `LogsTab`, and a
+  `logsTab(config)` factory (scrollModel 'chrome'). Wire it into examples/host-app (box 5).
 - **Known blockers:** none.
 
 ## Environment notes
@@ -28,6 +27,12 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 4 — M3 box 1: LogSource backend abstraction COMPLETE
+- logs subpackage: LogEntry contract (open fields, optional service, adapter-supplied stable id D04), LogFilters/LogPage/LogFacets, LogCapabilities (declared text_search D05). LogSource Protocol (search/tail/enumerate/capabilities); ingest is NOT on the protocol (D06).
+- InMemoryLogSource (default adapter + test/demo): substring search, facets, live tail via subscriber queues, append() ingest mixin assigns stable ids + ring-trims.
+- build_logs_router: GET /logs/{capabilities,facets,search} + SSE /logs/tail (prime/entry/error). Mounted into the dashboard when 'logs' tab enabled; log_source threaded through make_dashboard_app/mount_dashboard/dashboard_lifespan.
+- **Verified:** pytest 21/21 (8 new logs tests incl. live-tail delivery + capability-driven 404 when tab disabled), ruff clean.
+
 ### 2026-06-08 — iteration 3 — M2 backend mount + engine lifecycle + own DB COMPLETE
 - make_dashboard_app + mount_dashboard (sub-app factory, D09); dashboard_lifespan builds the async engine IN-LOOP (D10) and disposes on shutdown; engine never module-global.
 - DevDashConfig (pydantic-settings, DEVDASH_ env); auth (open+warn / bearer / host hook); explicit CORS (never *); metrics opt-in. /__devdash/meta handshake (D12); honest 503 when lifespan unwired.

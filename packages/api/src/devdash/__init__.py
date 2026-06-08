@@ -7,6 +7,7 @@ from .dashboard import (
     make_dashboard_app,
     mount_dashboard,
 )
+from .logs import InMemoryLogSource, LogSource, build_logs_router
 from .metadata import metadata
 from .migrations import create_database, migrate
 from .version import CONTRACT_VERSION, __version__
@@ -22,4 +23,7 @@ __all__ = [
     "migrate",
     "create_database",
     "metadata",
+    "LogSource",
+    "InMemoryLogSource",
+    "build_logs_router",
 ]

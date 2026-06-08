@@ -24,6 +24,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 from .auth import AuthDependency, build_auth_dependency
 from .config import DevDashConfig
 from .db import dispose_engine, make_engine
+from .logs import InMemoryLogSource, LogSource, build_logs_router
 from .version import CONTRACT_VERSION, __version__
 
 logger = logging.getLogger("devdash")
@@ -34,10 +35,17 @@ LifespanFactory = Callable[[], AbstractAsyncContextManager[None]]
 class Dashboard:
     """Owns the sub-app, the config, and the engine bound to the running loop."""
 
-    def __init__(self, config: DevDashConfig, *, auth_hook: AuthDependency | None = None) -> None:
+    def __init__(
+        self,
+        config: DevDashConfig,
+        *,
+        auth_hook: AuthDependency | None = None,
+        log_source: LogSource | None = None,
+    ) -> None:
         self.config = config
         self._engine: AsyncEngine | None = None
         self._auth = build_auth_dependency(config, auth_hook)
+        self._log_source: LogSource = log_source or InMemoryLogSource()
         self.app = self._build_app()
 
     # -- engine ---------------------------------------------------------------
@@ -117,19 +125,25 @@ class Dashboard:
             # A trivial guarded (mutating) route, useful for auth wiring tests.
             return {"echo": payload}
 
+        if "logs" in self.config.enabled_tabs:
+            app.include_router(build_logs_router(self._log_source))
+
         _mount_ui(app)
         return app
 
 
 def dashboard_lifespan(
-    config: DevDashConfig, *, auth_hook: AuthDependency | None = None
+    config: DevDashConfig,
+    *,
+    auth_hook: AuthDependency | None = None,
+    log_source: LogSource | None = None,
 ) -> tuple[FastAPI, LifespanFactory]:
     """Build the dashboard sub-app and return ``(sub_app, lifespan)``.
 
     For hosts that mount the sub-app themselves and compose the returned
     lifespan into their own.
     """
-    dash = Dashboard(config, auth_hook=auth_hook)
+    dash = Dashboard(config, auth_hook=auth_hook, log_source=log_source)
     return dash.app, dash.lifespan
 
 
@@ -139,6 +153,7 @@ def mount_dashboard(
     path: str | None = None,
     *,
     auth_hook: AuthDependency | None = None,
+    log_source: LogSource | None = None,
 ) -> LifespanFactory:
     """Mount the dashboard into ``host_app`` and return the lifespan to compose.
 
@@ -151,17 +166,20 @@ def mount_dashboard(
             async with dash_lifespan():
                 yield
     """
-    dash = Dashboard(config, auth_hook=auth_hook)
+    dash = Dashboard(config, auth_hook=auth_hook, log_source=log_source)
     host_app.mount(path or config.base_path, dash.app)
     return dash.lifespan
 
 
 def make_dashboard_app(
-    config: DevDashConfig, *, auth_hook: AuthDependency | None = None
+    config: DevDashConfig,
+    *,
+    auth_hook: AuthDependency | None = None,
+    log_source: LogSource | None = None,
 ) -> FastAPI:
     """A self-contained app the standalone runner serves: a root app that mounts
     the dashboard sub-app at ``config.base_path`` with its lifespan wired."""
-    dash = Dashboard(config, auth_hook=auth_hook)
+    dash = Dashboard(config, auth_hook=auth_hook, log_source=log_source)
 
     @asynccontextmanager
     async def root_lifespan(_app: FastAPI) -> AsyncIterator[None]:
