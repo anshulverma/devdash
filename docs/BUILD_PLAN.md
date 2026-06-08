@@ -46,7 +46,7 @@ running the command, not by assertion). Record progress in [`../PROGRESS.md`](..
       ingest-out-of-core (D06)
 - [x] In-memory adapter (default/test); `logsTab(config)` factory; capability-driven UI;
       SSE prime/entry/error + `Last-Event-ID` resume + drop-oldest `gap` marker
-- [ ] Quickwit+Redis composite adapter (degrades to tail-only when search down)
+- [x] Quickwit+Redis composite adapter (degrades to tail-only when search down)
 - [x] single-Postgres adapter (ILIKE/tsvector search, cursor-poll tail)
 - [x] In-memory adapter searches + tails in `examples/host-app`; capabilities disable search where
       absent

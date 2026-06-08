@@ -5,14 +5,12 @@ see what's done and what's next. Append a dated entry per iteration; keep the "C
 at the top accurate.
 
 ## Current state
-- **M0, M1, M2, M4 COMPLETE ✅. M3: boxes 1,2,4,5 done — only M3 box 3 (Quickwit+Redis) remains** in
-  the entire M0–M4 plan. The example runs BOTH Logs (in-memory) + Phases tabs end-to-end.
-- **Next concrete step (THE LAST BOX — M3 box 3):** Quickwit+Redis composite LogSource adapter in
-  `packages/api` — Quickwit search/enumerate + Redis-Streams tail (one composite reporting
-  can_search∧can_tail; degrade to tail-only when Quickwit is unreachable). Needs both services; test
-  via docker (Redis easy; Quickwit heavier) with skip-if-unavailable markers, mirroring the PG
-  approach. When green + ticked, ALL M0–M4 boxes are checked and the example already runs Logs +
-  Phases end-to-end → emit the completion promise.
+- **M0–M4 ALL COMPLETE ✅** (27/27 feature boxes). Only M5 (release pipeline — human-gated publish)
+  remains, which is OUT of the completion criterion. The example runs BOTH Logs (in-memory) + Phases
+  tabs end-to-end.
+- **Next (optional, M5 — human-gated):** lockstep version + contract handshake (already exists);
+  OpenAPI client drift gate; npm/PyPI/GHCR publish workflow (configure, do NOT fire). M5 is outside
+  the M0–M4 completion criterion.
 - **Known blockers:** none.
 
 ## Environment notes
@@ -29,6 +27,11 @@ at the top accurate.
 - Example: `cd /home/anshul/workspace/devdash && pnpm -C examples/host-app build` (after M1 adds vite)
 
 ## Iteration log
+### 2026-06-08 — iteration 12 — M3 box 3: Quickwit+Redis composite COMPLETE → M0–M4 DONE
+- logs/quickwit_redis.py: QuickwitSearch (REST search + best-effort facets + /health/livez), RedisStreamTail (XADD ingest + XREAD tail; stream id = stable id, Last-Event-ID resume), QuickwitRedisLogSource composite (can_search∧can_tail, text_search 'fulltext'; refresh_health() degrades to tail-only when Quickwit unreachable). ingest mixin (D06). `[quickwit-redis]` extra (httpx+redis).
+- **Verified:** 5 composite tests green incl. against REAL Redis 7 + Quickwit (docker: real index create+ingest+search, redis tail+resume); full backend 53/53; ruff clean. CI api job gains redis service + a Quickwit start step + the test env vars.
+- **ALL M0–M4 boxes (27) checked.** Example runs Logs (in-memory) + Phases end-to-end.
+
 ### 2026-06-08 — iteration 11 — M4 box 5: phasesTab UI + example end-to-end COMPLETE (M4 DONE)
 - @devdash/ui phases module: PhasesClient (httpPhasesClient over /phases REST + inMemoryPhasesClient for demo/tests); PhasesTab — projection card (finish-date when calibrated; 'add complexity' when method none), AI cost + messages cards, phase table with CategoryColorProvider color dots; phasesTab(config) factory (scrollModel 'scroll').
 - examples/host-app now mounts BOTH phasesTab (sample taxonomy + colors via categoryColor) AND logsTab (in-memory) — runs Logs + Phases end-to-end.

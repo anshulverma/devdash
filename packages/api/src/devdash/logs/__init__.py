@@ -8,6 +8,7 @@ from .contract import (
     LogPage,
 )
 from .memory import InMemoryLogSource
+from .quickwit_redis import QuickwitRedisLogSource, QuickwitSearch, RedisStreamTail
 from .routes import build_logs_router
 from .source import LogSource
 from .sql import SqlLogSource
@@ -22,4 +23,7 @@ __all__ = [
     "InMemoryLogSource",
     "build_logs_router",
     "SqlLogSource",
+    "QuickwitRedisLogSource",
+    "QuickwitSearch",
+    "RedisStreamTail",
 ]

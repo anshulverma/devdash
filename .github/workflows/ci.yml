@@ -42,17 +42,36 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     defaults:
       run:
         working-directory: packages/api
     env:
       DEVDASH_TEST_PG_URL: postgresql+asyncpg://devdash:devdash@localhost:5432/devdash
+      DEVDASH_TEST_REDIS_URL: redis://localhost:6379
+      DEVDASH_TEST_QUICKWIT_URL: http://localhost:7280
     steps:
       - uses: actions/checkout@v4
+      - name: Start Quickwit
+        working-directory: .
+        run: |
+          docker run -d --name quickwit -p 7280:7280 quickwit/quickwit:latest run
+          for i in $(seq 1 60); do
+            curl -fsS http://localhost:7280/health/livez >/dev/null 2>&1 && { echo "quickwit ready"; break; }
+            sleep 2
+          done
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
-      - run: uv sync --extra dev
+      - run: uv sync --extra dev --extra quickwit-redis
       - run: uv run pytest -q
       - run: uv run ruff check .
 

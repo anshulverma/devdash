@@ -7,7 +7,13 @@ from .dashboard import (
     make_dashboard_app,
     mount_dashboard,
 )
-from .logs import InMemoryLogSource, LogSource, SqlLogSource, build_logs_router
+from .logs import (
+    InMemoryLogSource,
+    LogSource,
+    QuickwitRedisLogSource,
+    SqlLogSource,
+    build_logs_router,
+)
 from .metadata import metadata
 from .migrations import create_database, migrate
 from .phases import PhaseSpec, PhaseTrackerConfig, PriceTable
@@ -28,6 +34,7 @@ __all__ = [
     "InMemoryLogSource",
     "build_logs_router",
     "SqlLogSource",
+    "QuickwitRedisLogSource",
     "PhaseTrackerConfig",
     "PhaseSpec",
     "PriceTable",
