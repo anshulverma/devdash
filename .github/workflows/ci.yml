@@ -70,7 +70,7 @@ jobs:
             curl -fsS http://localhost:7280/health/livez >/dev/null 2>&1 && { echo "quickwit ready"; break; }
             sleep 2
           done
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.3.0
         with:
           python-version: "3.12"
       - run: uv sync --extra dev --extra quickwit-redis
